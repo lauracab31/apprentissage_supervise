@@ -4,7 +4,7 @@ import pandas as pd
 
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.model_selection import StratifiedShuffleSplit, cross_val_score
+from sklearn.model_selection import StratifiedShuffleSplit, cross_val_score, GridSearchCV
 from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier, RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 
@@ -28,14 +28,14 @@ jl.dump(scalerX,"scaler.jl")
 #étudier la distribution des features
 featuresEtudiees = ['AGEP','COW','SCHL','MAR','OCCP','POBP','RELP','WKHP','SEX','RAC1P']
 df.describe()
-#for colonne in featuresEtudiees :
-#    plt.hist(df[colonne], bins=50, alpha=0.5, label=colonne)
-#    plt.xlabel('features')
-#    plt.ylabel('valeurs')
-#    plt.title('distribution des features')
-#    plt.legend()
-   # plt.show()
-   # plt.savefig('hist'+colonne, dpi=300)
+for colonne in featuresEtudiees :
+    plt.hist(df[colonne], bins=50, alpha=0.5, label=colonne)
+    plt.xlabel('features')
+    plt.ylabel('valeurs')
+    plt.title('distribution des features')
+    plt.legend()
+    plt.show()
+    plt.savefig('hist'+colonne, dpi=300)
 
 # Préparation des données pour le partitionnement
 X = features_scaled
@@ -52,8 +52,7 @@ for train_index, test_index in sss.split(X, y):
 print(f"\nDimensions des données d'entrée X : {X.shape}")
 print(f"Dimensions des labels y : {y.shape}")
 
-"""
-# I recherche de bons modèles
+
 # 1) on commence avec le modèle type RandomForest :
 rf_model = RandomForestClassifier()
 cv_scores_rf = cross_val_score(rf_model, X_train, y_train, cv=5).mean()
@@ -72,6 +71,17 @@ mat_conf_rf = confusion_matrix(y_test, rf_prediction)
 print("Acuracy = ", ac_rf)
 print("classification report = ", class_rf)
 print("matrice de confusion = ", mat_conf_rf)
+
+#recherche de la meilleure qualité d'apprentissage avec la détermination des hyperparamètres (partie 3.2)
+param_rf = {'n_estimators' : [50,100,150], 'criterion':['gini','entropy','logLoss'], 'max_depth':[None, 10, 20], 'min_samples_split':[0.5, 1.0, 2.0]}
+gridSearch_rf = GridSearchCV(RandomForestClassifier(), param_rf, cv=5)
+gridSearch_rf.fit(X_train, y_train)
+bestParam_rf = gridSearch_rf.best_params_
+print("Les meilleurs paramètres sont : ", bestParam_rf)
+
+#enregistrement du meilleur modèle obtenu
+jl.dump(gridSearch_rf.best_estimator_ ,'gridSearch_rf.joblib')
+
 
 
 # 2) on continue avec le modèle type AdaBoost :
@@ -93,6 +103,15 @@ print("Acuracy AdaBoost = ", ac_ab)
 print("classification report AdaBoost = ", class_ab)
 print("matrice de confusion AdaBoost = ", mat_conf_ab)
 
+#recherche de la meilleure qualité d'apprentissage avec la détermination des hyperparamètres (partie 3.2)
+param_ab = {'n_estimators' : [10,40,100], 'algorithm':['SAMME', 'SAMME.R'], 'learning_rate':[0.2, 0.5, 1.0]}
+gridSearch_ab = GridSearchCV(AdaBoostClassifier(), param_ab, cv=5)
+gridSearch_ab.fit(X_train, y_train)
+bestParam_ab = gridSearch_ab.best_params_
+print("Les meilleurs paramètres sont : ", bestParam_ab)
+
+#enregistrement du meilleur modèle obtenu
+jl.dump(gridSearch_ab.best_estimator_ ,'gridSearch_ab.joblib')
 
 
 # 2) on continue avec le modèle type GradientBoosting :
@@ -115,5 +134,12 @@ print("Acuracy AdaBoost = ", ac_gb)
 print("classification report AdaBoost = ", class_gb)
 print("matrice de confusion AdaBoost = ", mat_conf_gb)
 
-"""
+#recherche de la meilleure qualité d'apprentissage avec la détermination des hyperparamètres (partie 3.2)
+param_gb = {'n_estimators' : [20,50,100], 'loss':['log_loss', 'exponential'], 'learning_rate':[0.2, 0.5, 1.0], 'criterion':['friedman_mse', 'squarred_error'], 'subsample':[0.5, 1.0, 1.5]}
+gridSearch_gb = GridSearchCV(GradientBoostingClassifier(), param_gb, cv=5)
+gridSearch_gb.fit(X_train, y_train)
+bestParam_gb = gridSearch_gb.best_params_
+print("Les meilleurs paramètres sont : ", bestParam_gb)
 
+#enregistrement du meilleur modèle obtenu
+jl.dump(gridSearch_gb.best_estimator_ ,'gridSearch_gb.joblib')
