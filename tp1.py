@@ -73,7 +73,7 @@ print("classification report = ", class_rf)
 print("matrice de confusion = ", mat_conf_rf)
 
 #recherche de la meilleure qualité d'apprentissage avec la détermination des hyperparamètres (partie 3.2)
-param_rf = {'n_estimators' : [50,100,150], 'criterion':['gini','entropy','logLoss'], 'max_depth':[None, 10, 20], 'min_samples_split':[0.5, 1.0, 2.0]}
+param_rf = {'n_estimators' : [50,100,130], 'criterion':['gini','entropy','log_loss'], 'max_depth':[None, 10, 20], 'min_samples_split':[0.2, 1.0, 2.0]}
 gridSearch_rf = GridSearchCV(RandomForestClassifier(), param_rf, cv=5)
 gridSearch_rf.fit(X_train, y_train)
 bestParam_rf = gridSearch_rf.best_params_
@@ -82,7 +82,7 @@ print("Les meilleurs paramètres sont : ", bestParam_rf)
 #enregistrement du meilleur modèle obtenu
 jl.dump(gridSearch_rf.best_estimator_ ,'gridSearch_rf.joblib')
 
-
+"""
 
 # 2) on continue avec le modèle type AdaBoost :
 ab_model = AdaBoostClassifier()
@@ -143,3 +143,4 @@ print("Les meilleurs paramètres sont : ", bestParam_gb)
 
 #enregistrement du meilleur modèle obtenu
 jl.dump(gridSearch_gb.best_estimator_ ,'gridSearch_gb.joblib')
+"""

@@ -42,23 +42,16 @@ correlation_matrix = train_all_df.corr()
 print("Matrice de corrélation :")
 print(correlation_matrix)
 
-# Visualisation de la matrice de corrélation avec un heatmap
+# Visualisation de la matrice de corrélation pour les données initiales
 plt.figure(figsize=(10, 8))
 sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", linewidths=.5)
 plt.title('Matrice de corrélation des données initiales')
 plt.show()
 
+#I. RandomForest############################################################################################################""
 rf = jl.load('gridSearch_rf.joblib')
 
-plt.figure(figsize=(10, 6))
-correlation_matrix.iloc[:-1]['PINCP'].plot(kind='barh', color='red')
-plt.title('Correlation with PINCP Random Forest')
-plt.xlabel('Correlation Coefficient')
-plt.ylabel('Features')
-plt.grid(axis='x', linestyle='--', alpha=0.6)
-plt.show()
-
-rf.fit(X_train, y_train)  # Entraînement du modèle
+rf.fit(X_train, y_train)  # Entraînement du modèle avec les meilleurs paramètres 
 
 # 2. Prédiction sur l'ensemble de test complet (X_test_all)
 y_pred_rf = rf.predict(X_test_all)
@@ -69,19 +62,18 @@ df_y_pred_rf = pd.DataFrame(y_pred_rf, columns=['PINCP'])
 # 4. Fusion des prédictions avec les features de test
 merged_rf = pd.concat([X_test_all, df_y_pred_rf], axis=1)
 
-# 5. Calcul de la matrice de corrélation
+# 5. Calcul de la matrice de corrélationn avec les données produites par les modèles d’apprentissage
 correlation_matrix_rf = merged_rf.corr()
 
 # 6. Affichage de la matrice de corrélation dans la console
 print("Matrice de corrélation après entraînement avec RandomForest :")
 print(correlation_matrix_rf)
-
-# 7. Visualisation de la matrice de corrélation avec un heatmap
 plt.figure(figsize=(10, 8))
 sns.heatmap(correlation_matrix_rf, annot=True, cmap='coolwarm', fmt=".2f", linewidths=.5)
 plt.title('Matrice de corrélation après entraînement avec RandomForest')
 plt.show()
 
+#classement des différents attributs du jeu de données par ordre d’importance
 importance_rf = permutation_importance(rf, X_test_all, df_y_pred_rf, random_state=42).importances_mean
 
 for i in range(len(importance_rf)):
@@ -97,8 +89,8 @@ plt.ylabel('Importance')
 plt.xticks(rotation=45, ha='right') 
 plt.show()
 
+#II. AdaBoost############################################################################################################""
 ab = jl.load('gridSearch_ab.joblib')
-
 ab.fit(X_train, y_train)  # Entraînement du modèle
 
 # 2. Prédiction sur l'ensemble de test complet (X_test_all)
@@ -113,16 +105,15 @@ merged_ab = pd.concat([X_test_all, df_y_pred_ab], axis=1)
 # 5. Calcul de la matrice de corrélation
 correlation_matrix_ab = merged_ab.corr()
 
-# 6. Affichage de la matrice de corrélation dans la console
+# 6. Affichage de la matrice de corrélation 
 print("Matrice de corrélation après entraînement avec AdaBoost :")
 print(correlation_matrix_ab)
-
-# 7. Visualisation de la matrice de corrélation avec un heatmap
 plt.figure(figsize=(10, 8))
 sns.heatmap(correlation_matrix_ab, annot=True, cmap='coolwarm', fmt=".2f", linewidths=.5)
 plt.title('Matrice de corrélation après entraînement avec AdaBoost')
 plt.show()
 
+#classement des différents attributs du jeu de données par ordre d’importance
 importance_ab = permutation_importance(ab, X_test_all, df_y_pred_ab, random_state=42).importances_mean
 
 for i in range(len(importance_ab)):
@@ -138,6 +129,7 @@ plt.ylabel('Importance')
 plt.xticks(rotation=45, ha='right') 
 plt.show()
 
+#III. GradientBoosting############################################################################################################""
 gb = jl.load('gridSearch_gb.joblib')
 
 gb.fit(X_train, y_train)  # Entraînement du modèle
@@ -164,8 +156,8 @@ sns.heatmap(correlation_matrix_gb, annot=True, cmap='coolwarm', fmt=".2f", linew
 plt.title('Matrice de corrélation après entraînement avec GB')
 plt.show()
 
+#classement des différents attributs du jeu de données par ordre d’importance
 importance_gb = permutation_importance(gb, X_test_all, df_y_pred_gb, random_state=42).importances_mean
-
 for i in range(len(importance_gb)):
     print(f"Feature {i}: ", importance_gb[i])
 
